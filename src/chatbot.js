@@ -142,10 +142,7 @@ function procesarMensaje(mensaje, usuarioId = "default") {
             };
         }
 
-        return {
-            texto: "Por favor, elige uno de los tipos de préstamo disponibles:\n\n¿Qué tipo de préstamo deseas?",
-            opciones: respuestas.cotizar_tipo.opciones
-        };
+        return respuestas.tipos_prestamos;
     }
 
     // PASO 2: ESPERANDO MONTO
@@ -196,8 +193,8 @@ function procesarMensaje(mensaje, usuarioId = "default") {
             texto: `Perfecto. Tu cuota aproximada sería de ${formatearMoneda(cuota)}.\n\n📋 *Detalles de tu cotización:*\n• 👤 Tipo: ${tipo}\n• 💰 Monto solicitado: ${formatearMoneda(monto)}\n• 📅 Plazo: ${plazo} meses\n• 💵 Cuota mensual estimada: ${formatearMoneda(cuota)}\n• 📊 Total aproximado a pagar: ${formatearMoneda(totalPagar)}\n\n¿Qué deseas hacer ahora?`,
             opciones: [
                 {
-                    texto: "🔄 Cotizar otro monto",
-                    valor: "iniciar_cotizacion"
+                    texto: "🔄 Cotizar otro préstamo",
+                    valor: "tipos_prestamos"
                 },
                 {
                     texto: "📞 Contactar asesor",
@@ -217,10 +214,11 @@ function procesarMensaje(mensaje, usuarioId = "default") {
     }
 
     // ==========================================
-    // DISPARADORES PARA INICIAR COTIZACIÓN
+    // DISPARADORES: TIPOS DE PRÉSTAMOS / COTIZACIÓN
     // ==========================================
 
     if (
+        texto === "tipos_prestamos" ||
         texto === "iniciar_cotizacion" ||
         texto === "cotizar" ||
         texto === "cotizar prestamo" ||
@@ -229,10 +227,19 @@ function procesarMensaje(mensaje, usuarioId = "default") {
         texto === "solicitar prestamo" ||
         texto === "solicitar préstamo" ||
         texto === "quiero solicitar" ||
-        texto === "calcular cuota"
+        texto === "calcular cuota" ||
+        texto === "cuota" ||
+        texto.includes("tipos de prestamo") ||
+        texto.includes("tipos de préstamo") ||
+        texto.includes("tipo de prestamo") ||
+        texto.includes("tipo de préstamo") ||
+        texto.includes("tipos prestamo") ||
+        texto.includes("tipos préstamo") ||
+        texto === "prestamos" ||
+        texto === "préstamos"
     ) {
         actualizarSesion(usuarioId, PASOS.ESPERANDO_TIPO);
-        return respuestas.cotizar_tipo;
+        return respuestas.tipos_prestamos;
     }
 
     if (texto === "cotizar_personal") {
@@ -323,39 +330,6 @@ function procesarMensaje(mensaje, usuarioId = "default") {
     }
 
 
-    // =========================
-    // TIPOS DE PRÉSTAMOS
-    // =========================
-
-    if (
-        texto === "tipos_prestamos" ||
-        texto.includes("tipos de prestamo") ||
-        texto.includes("tipos de préstamo") ||
-        texto.includes("tipo de prestamo") ||
-        texto.includes("tipo de préstamo") ||
-        texto.includes("tipos prestamo") ||
-        texto.includes("tipos préstamo") ||
-        texto === "prestamos" ||
-        texto === "préstamos" ||
-        (
-            (texto.includes("prestamo") || texto.includes("préstamo")) &&
-            (
-                texto.includes("tipo") ||
-                texto.includes("tipos") ||
-                texto.includes("quiero") ||
-                texto.includes("solicitar") ||
-                texto.includes("solicitud") ||
-                texto.includes("pedir") ||
-                texto.includes("necesito") ||
-                texto.includes("informacion") ||
-                texto.includes("información") ||
-                texto.includes("ofrecen") ||
-                texto.includes("ver")
-            )
-        )
-    ) {
-        return respuestas.tipos_prestamos;
-    }
 
 
     // =========================
@@ -416,22 +390,6 @@ function procesarMensaje(mensaje, usuarioId = "default") {
     }
 
 
-    // =========================
-    // CUOTA
-    // =========================
-
-    if (
-        texto === "cuota" ||
-        texto.includes("cuota") ||
-        texto.includes("cuanto pagaria") ||
-        texto.includes("cuánto pagaría") ||
-        texto.includes("cuanto voy a pagar") ||
-        texto.includes("cuánto voy a pagar") ||
-        texto.includes("calcular cuota") ||
-        texto.includes("calcular la cuota")
-    ) {
-        return respuestas.cuota;
-    }
 
 
     // =========================
