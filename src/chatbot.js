@@ -1,12 +1,50 @@
 const respuestas = require("./respuestas");
 
-function procesarMensaje(mensaje) {
+// ==========================================
+// GESTIÓN DE SESIONES / ESTADOS POR USUARIO
+// ==========================================
+
+const sesiones = {};
+
+function obtenerSesion(usuarioId) {
+    if (!sesiones[usuarioId]) {
+        sesiones[usuarioId] = {
+            paso: "INICIO",
+            datos: {},
+            ultimaActualizacion: Date.now()
+        };
+    }
+    return sesiones[usuarioId];
+}
+
+function actualizarSesion(usuarioId, nuevoPaso, nuevosDatos = {}) {
+    const sesion = obtenerSesion(usuarioId);
+    sesion.paso = nuevoPaso;
+    sesion.datos = {
+        ...sesion.datos,
+        ...nuevosDatos
+    };
+    sesion.ultimaActualizacion = Date.now();
+    return sesion;
+}
+
+function reiniciarSesion(usuarioId) {
+    sesiones[usuarioId] = {
+        paso: "INICIO",
+        datos: {},
+        ultimaActualizacion: Date.now()
+    };
+    return sesiones[usuarioId];
+}
+
+function procesarMensaje(mensaje, usuarioId = "default") {
 
     const texto = mensaje.toLowerCase().trim();
+    const sesion = obtenerSesion(usuarioId);
 
-    // =========================
-    // MENÚ PRINCIPAL
-    // =========================
+    // ==========================================
+    // COMANDOS GLOBALES / REINICIO DE SESIÓN
+    // ==========================================
 
     if (
         texto.includes("hola") ||
@@ -16,8 +54,11 @@ function procesarMensaje(mensaje) {
         texto.includes("buenas noches") ||
         texto === "inicio" ||
         texto === "menu" ||
-        texto === "menú"
+        texto === "menú" ||
+        texto === "cancelar" ||
+        texto === "reiniciar"
     ) {
+        reiniciarSesion(usuarioId);
         return respuestas.menu;
     }
 
@@ -190,5 +231,9 @@ if (
 }
 
 module.exports = {
-    procesarMensaje
+    procesarMensaje,
+    sesiones,
+    obtenerSesion,
+    actualizarSesion,
+    reiniciarSesion
 };

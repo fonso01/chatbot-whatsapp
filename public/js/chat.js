@@ -2,6 +2,13 @@ const messages = document.getElementById("messages");
 const input = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 
+// Identificador único del usuario (persiste en la sesión del navegador)
+let usuarioId = localStorage.getItem("chat_usuario_id");
+if (!usuarioId) {
+    usuarioId = "user_" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("chat_usuario_id", usuarioId);
+}
+
 
 // Enviar mensaje escrito
 sendButton.addEventListener("click", () => {
@@ -62,7 +69,8 @@ async function obtenerRespuesta(mensaje) {
             },
 
             body: JSON.stringify({
-                mensaje: mensaje
+                mensaje: mensaje,
+                usuarioId: usuarioId
             })
 
         });

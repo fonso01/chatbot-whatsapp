@@ -15,8 +15,9 @@ app.use(express.static(
 app.post("/mensaje", (req, res) => {
 
     const mensaje = req.body.mensaje;
+    const usuarioId = req.body.usuarioId || req.ip || "usuario_web";
 
-    const respuesta = procesarMensaje(mensaje);
+    const respuesta = procesarMensaje(mensaje, usuarioId);
 
     res.json(respuesta);
 });
