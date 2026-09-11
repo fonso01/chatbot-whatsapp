@@ -64,38 +64,11 @@ function procesarMensaje(mensaje, usuarioId = "default") {
 
 
     // =========================
-    // TIPOS DE PRÉSTAMOS
-    // =========================
-
-   // =========================
-// TIPOS DE PRÉSTAMOS
-// =========================
-
-if (
-    texto.includes("prestamo") ||
-    texto.includes("préstamo")
-) {
-    if (
-        texto.includes("quiero") ||
-        texto.includes("solicitar") ||
-        texto.includes("solicitud") ||
-        texto.includes("pedir") ||
-        texto.includes("necesito") ||
-        texto.includes("informacion") ||
-        texto.includes("información") ||
-        texto.includes("ofrecen")
-    ) {
-        return respuestas.tipos_prestamos;
-    }
-}
-      
-
-
-    // =========================
     // PRÉSTAMO PERSONAL
     // =========================
 
     if (
+        texto === "personal" ||
         texto.includes("prestamo personal") ||
         texto.includes("préstamo personal") ||
         texto.includes("prestamo para mi") ||
@@ -110,11 +83,13 @@ if (
     // =========================
 
     if (
+        texto === "negocio" ||
         texto.includes("prestamo para negocio") ||
         texto.includes("préstamo para negocio") ||
         texto.includes("prestamo para mi negocio") ||
         texto.includes("préstamo para mi negocio") ||
-        texto.includes("dinero para mi negocio")
+        texto.includes("dinero para mi negocio") ||
+        texto.includes("para mi negocio")
     ) {
         return respuestas.negocio;
     }
@@ -125,6 +100,7 @@ if (
     // =========================
 
     if (
+        texto === "emergencia" ||
         texto.includes("prestamo de emergencia") ||
         texto.includes("préstamo de emergencia") ||
         texto.includes("necesito dinero urgente") ||
@@ -136,10 +112,46 @@ if (
 
 
     // =========================
+    // TIPOS DE PRÉSTAMOS
+    // =========================
+
+    if (
+        texto === "tipos_prestamos" ||
+        texto.includes("tipos de prestamo") ||
+        texto.includes("tipos de préstamo") ||
+        texto.includes("tipo de prestamo") ||
+        texto.includes("tipo de préstamo") ||
+        texto.includes("tipos prestamo") ||
+        texto.includes("tipos préstamo") ||
+        texto === "prestamos" ||
+        texto === "préstamos" ||
+        (
+            (texto.includes("prestamo") || texto.includes("préstamo")) &&
+            (
+                texto.includes("tipo") ||
+                texto.includes("tipos") ||
+                texto.includes("quiero") ||
+                texto.includes("solicitar") ||
+                texto.includes("solicitud") ||
+                texto.includes("pedir") ||
+                texto.includes("necesito") ||
+                texto.includes("informacion") ||
+                texto.includes("información") ||
+                texto.includes("ofrecen") ||
+                texto.includes("ver")
+            )
+        )
+    ) {
+        return respuestas.tipos_prestamos;
+    }
+
+
+    // =========================
     // REQUISITOS
     // =========================
 
     if (
+        texto === "requisitos" ||
         texto.includes("requisito") ||
         texto.includes("que necesito") ||
         texto.includes("qué necesito") ||
@@ -160,6 +172,7 @@ if (
     // =========================
 
     if (
+        texto === "tasas" ||
         texto.includes("tasa") ||
         texto.includes("interes") ||
         texto.includes("interés") ||
@@ -177,6 +190,7 @@ if (
     // =========================
 
     if (
+        texto === "plazos" ||
         texto.includes("plazo") ||
         texto.includes("cuanto tiempo") ||
         texto.includes("cuánto tiempo") ||
@@ -195,6 +209,7 @@ if (
     // =========================
 
     if (
+        texto === "cuota" ||
         texto.includes("cuota") ||
         texto.includes("cuanto pagaria") ||
         texto.includes("cuánto pagaría") ||
@@ -212,6 +227,7 @@ if (
     // =========================
 
     if (
+        texto === "contacto" ||
         texto.includes("contacto") ||
         texto.includes("contactar") ||
         texto.includes("asesor") ||
