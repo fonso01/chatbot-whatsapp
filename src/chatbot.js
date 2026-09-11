@@ -45,6 +45,7 @@ const PASOS = {
     INICIO: "INICIO",
     ESPERANDO_TIPO: "ESPERANDO_TIPO",
     ESPERANDO_MONTO: "ESPERANDO_MONTO",
+    ESPERANDO_FRECUENCIA: "ESPERANDO_FRECUENCIA",
     ESPERANDO_PLAZO: "ESPERANDO_PLAZO",
     COTIZACION_COMPLETADA: "COTIZACION_COMPLETADA"
 };
@@ -67,20 +68,47 @@ function parsearMonto(texto) {
     return isNaN(monto) || monto <= 0 ? null : monto;
 }
 
-function parsearPlazo(texto) {
+function parsearPlazo(texto, frecuencia = "mensual") {
     if (!texto) return null;
     if (texto.includes("-")) return null;
-    const match = texto.match(/\d+/);
+
+    const textoMin = texto.toLowerCase();
+    const match = textoMin.match(/\d+/);
     if (!match) return null;
-    const plazo = parseInt(match[0], 10);
-    return isNaN(plazo) || plazo < 1 || plazo > 120 ? null : plazo;
+    const num = parseInt(match[0], 10);
+    if (isNaN(num) || num <= 0) return null;
+
+    if (frecuencia === "semanal") {
+        // Si el usuario especificó meses (ej: "3 meses")
+        if (textoMin.includes("mes") && !textoMin.includes("semana")) {
+            return num * 4;
+        }
+        // Si especificó semanas o eligió botón (ej: "12 semanas", plazo_12_semanas)
+        return num >= 2 && num <= 120 ? num : null;
+    }
+
+    if (frecuencia === "quincenal") {
+        // Si el usuario especificó meses (ej: "3 meses", "6 meses")
+        if (textoMin.includes("mes") && !textoMin.includes("quincena")) {
+            return num * 2;
+        }
+        // Si especificó quincenas o eligió botón (ej: "12 quincenas", plazo_12_quincenas)
+        return num >= 2 && num <= 120 ? num : null;
+    }
+
+    // Por defecto mensual
+    return num >= 1 && num <= 120 ? num : null;
 }
 
-function calcularCuota(monto, plazoMeses, tasaAnual = 0.18) {
-    const tasaMensual = tasaAnual / 12;
-    if (tasaMensual === 0) return Math.round(monto / plazoMeses);
-    const factor = Math.pow(1 + tasaMensual, plazoMeses);
-    const cuota = monto * (tasaMensual * factor) / (factor - 1);
+function calcularCuota(monto, numeroCuotas, tasaAnual = 0.18, frecuencia = "mensual") {
+    let periodosPorAno = 12;
+    if (frecuencia === "quincenal") periodosPorAno = 24;
+    if (frecuencia === "semanal") periodosPorAno = 48;
+
+    const tasaPeriodo = tasaAnual / periodosPorAno;
+    if (tasaPeriodo === 0) return Math.round(monto / numeroCuotas);
+    const factor = Math.pow(1 + tasaPeriodo, numeroCuotas);
+    const cuota = monto * (tasaPeriodo * factor) / (factor - 1);
     return Math.round(cuota);
 }
 
@@ -158,39 +186,85 @@ function procesarMensaje(mensaje, usuarioId = "default") {
             };
         }
 
-        actualizarSesion(usuarioId, PASOS.ESPERANDO_PLAZO, { monto: monto });
+        actualizarSesion(usuarioId, PASOS.ESPERANDO_FRECUENCIA, { monto: monto });
 
         return {
-            texto: `¿En cuánto tiempo deseas pagarlo?\n\nPuedes elegir una opción o escribir los meses (ejemplo: 12 meses):`,
-            opciones: respuestas.cotizar_plazo.opciones
+            texto: `💰 Monto registrado: ${formatearMoneda(monto)}\n\n¿Con qué frecuencia deseas realizar tus pagos?`,
+            opciones: respuestas.cotizar_frecuencia.opciones
         };
     }
 
-    // PASO 3: ESPERANDO PLAZO
-    if (sesion.paso === PASOS.ESPERANDO_PLAZO) {
-        const plazo = parsearPlazo(texto);
+    // PASO 3: ESPERANDO FRECUENCIA DE PAGO
+    if (sesion.paso === PASOS.ESPERANDO_FRECUENCIA) {
+        let frecuencia = null;
+        let plantillaPlazo = null;
 
-        if (!plazo || plazo < 1 || plazo > 60) {
+        if (texto === "frecuencia_semanal" || texto.includes("semanal") || texto.includes("semana") || texto === "1") {
+            frecuencia = "semanal";
+            plantillaPlazo = respuestas.cotizar_plazo_semanal;
+        } else if (texto === "frecuencia_quincenal" || texto.includes("quincenal") || texto.includes("quincena") || texto === "2") {
+            frecuencia = "quincenal";
+            plantillaPlazo = respuestas.cotizar_plazo_quincenal;
+        } else if (texto === "frecuencia_mensual" || texto.includes("mensual") || texto.includes("mes") || texto === "3") {
+            frecuencia = "mensual";
+            plantillaPlazo = respuestas.cotizar_plazo_mensual;
+        }
+
+        if (frecuencia && plantillaPlazo) {
+            actualizarSesion(usuarioId, PASOS.ESPERANDO_PLAZO, { frecuencia: frecuencia });
+            return plantillaPlazo;
+        }
+
+        return {
+            texto: "⚠️ Por favor, selecciona una frecuencia de pago disponible:\n\n¿Con qué frecuencia deseas realizar tus pagos?",
+            opciones: respuestas.cotizar_frecuencia.opciones
+        };
+    }
+
+    // PASO 4: ESPERANDO PLAZO
+    if (sesion.paso === PASOS.ESPERANDO_PLAZO) {
+        const frecuencia = sesion.datos.frecuencia || "mensual";
+        const cuotas = parsearPlazo(texto, frecuencia);
+
+        if (!cuotas) {
+            let plantilla = respuestas.cotizar_plazo_mensual;
+            if (frecuencia === "semanal") plantilla = respuestas.cotizar_plazo_semanal;
+            if (frecuencia === "quincenal") plantilla = respuestas.cotizar_plazo_quincenal;
+
             return {
-                texto: "⚠️ Por favor, ingresa un plazo válido entre 1 y 60 meses.\n\n¿En cuánto tiempo deseas pagarlo?",
-                opciones: respuestas.cotizar_plazo.opciones
+                texto: "⚠️ Por favor, ingresa o selecciona un plazo válido.\n\n" + plantilla.texto,
+                opciones: plantilla.opciones
             };
         }
 
         const monto = sesion.datos.monto;
         const tipo = sesion.datos.tipoPrestamo || "Préstamo personal";
         const tasaAnual = sesion.datos.tasaAnual || 0.18;
-        const cuota = calcularCuota(monto, plazo, tasaAnual);
-        const totalPagar = cuota * plazo;
+        const cuota = calcularCuota(monto, cuotas, tasaAnual, frecuencia);
+        const totalPagar = cuota * cuotas;
+
+        let descripcionPlazo = `${cuotas} meses`;
+        let etiquetaFrecuencia = "mensual";
+        let periodoTexto = "/ mes";
+
+        if (frecuencia === "semanal") {
+            descripcionPlazo = `${cuotas} semanas (${Math.round(cuotas / 4)} meses aprox.)`;
+            etiquetaFrecuencia = "semanal";
+            periodoTexto = "/ semana";
+        } else if (frecuencia === "quincenal") {
+            descripcionPlazo = `${cuotas} quincenas (${Math.round(cuotas / 2)} meses)`;
+            etiquetaFrecuencia = "quincenal";
+            periodoTexto = "/ quincena";
+        }
 
         actualizarSesion(usuarioId, PASOS.COTIZACION_COMPLETADA, {
-            plazo: plazo,
+            cuotas: cuotas,
             cuota: cuota,
             totalPagar: totalPagar
         });
 
         return {
-            texto: `Perfecto. Tu cuota aproximada sería de ${formatearMoneda(cuota)}.\n\n📋 *Detalles de tu cotización:*\n• 👤 Tipo: ${tipo}\n• 💰 Monto solicitado: ${formatearMoneda(monto)}\n• 📅 Plazo: ${plazo} meses\n• 💵 Cuota mensual estimada: ${formatearMoneda(cuota)}\n• 📊 Total aproximado a pagar: ${formatearMoneda(totalPagar)}\n\n¿Qué deseas hacer ahora?`,
+            texto: `Perfecto. Tu cuota aproximada sería de ${formatearMoneda(cuota)} ${etiquetaFrecuencia}.\n\n📋 *Detalles de tu cotización:*\n• 👤 Tipo: ${tipo}\n• 💰 Monto solicitado: ${formatearMoneda(monto)}\n• 🗓️ Frecuencia de pago: ${etiquetaFrecuencia.charAt(0).toUpperCase() + etiquetaFrecuencia.slice(1)}\n• 📅 Plazo: ${descripcionPlazo}\n• 💵 Cuota estimada: ${formatearMoneda(cuota)} ${periodoTexto}\n• 📊 Total aproximado a pagar: ${formatearMoneda(totalPagar)}\n\n¿Qué deseas hacer ahora?`,
             opciones: [
                 {
                     texto: "🔄 Cotizar otro préstamo",

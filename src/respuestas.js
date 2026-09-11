@@ -180,6 +180,106 @@ const respuestas = {
         ]
     },
 
+    cotizar_frecuencia: {
+        texto: "¿Con qué frecuencia deseas realizar tus pagos?",
+        opciones: [
+            {
+                texto: "🗓️ Semanal",
+                valor: "frecuencia_semanal"
+            },
+            {
+                texto: "🗓️ Quincenal",
+                valor: "frecuencia_quincenal"
+            },
+            {
+                texto: "🗓️ Mensual",
+                valor: "frecuencia_mensual"
+            },
+            {
+                texto: "❌ Cancelar",
+                valor: "cancelar"
+            }
+        ]
+    },
+
+    cotizar_plazo_semanal: {
+        texto: "¿En cuántas semanas o meses deseas pagarlo?\n\nPuedes elegir una opción o escribir las semanas (ejemplo: 12 semanas):",
+        opciones: [
+            {
+                texto: "4 semanas (1 mes)",
+                valor: "plazo_4_semanas"
+            },
+            {
+                texto: "12 semanas (3 meses)",
+                valor: "plazo_12_semanas"
+            },
+            {
+                texto: "24 semanas (6 meses)",
+                valor: "plazo_24_semanas"
+            },
+            {
+                texto: "48 semanas (12 meses)",
+                valor: "plazo_48_semanas"
+            },
+            {
+                texto: "❌ Cancelar",
+                valor: "cancelar"
+            }
+        ]
+    },
+
+    cotizar_plazo_quincenal: {
+        texto: "¿En cuántas quincenas o meses deseas pagarlo?\n\nPuedes elegir una opción o escribir las quincenas (ejemplo: 6 quincenas):",
+        opciones: [
+            {
+                texto: "6 quincenas (3 meses)",
+                valor: "plazo_6_quincenas"
+            },
+            {
+                texto: "12 quincenas (6 meses)",
+                valor: "plazo_12_quincenas"
+            },
+            {
+                texto: "24 quincenas (12 meses)",
+                valor: "plazo_24_quincenas"
+            },
+            {
+                texto: "48 quincenas (24 meses)",
+                valor: "plazo_48_quincenas"
+            },
+            {
+                texto: "❌ Cancelar",
+                valor: "cancelar"
+            }
+        ]
+    },
+
+    cotizar_plazo_mensual: {
+        texto: "¿En cuánto tiempo deseas pagarlo?\n\nPuedes elegir una opción o escribir los meses (ejemplo: 12 meses):",
+        opciones: [
+            {
+                texto: "6 meses",
+                valor: "plazo_6"
+            },
+            {
+                texto: "12 meses",
+                valor: "plazo_12"
+            },
+            {
+                texto: "18 meses",
+                valor: "plazo_18"
+            },
+            {
+                texto: "24 meses",
+                valor: "plazo_24"
+            },
+            {
+                texto: "❌ Cancelar",
+                valor: "cancelar"
+            }
+        ]
+    },
+
     cotizar_plazo: {
         texto: "¿En cuánto tiempo deseas pagarlo?\n\nPuedes elegir una opción o escribir los meses (ejemplo: 12 meses):",
         opciones: [
